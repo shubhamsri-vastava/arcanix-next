@@ -175,11 +175,15 @@ export function ArcanixExperience() {
       if (authMode === 'signup') {
         const { data: available, error: availabilityError } = await supabase.rpc('is_handle_available', { candidate: handle })
         if (availabilityError) {
-          const missingRegistrationRpc = availabilityError.code === 'PGRST202' || /is_handle_available/i.test(availabilityError.message)
-          setAuthMessage(missingRegistrationRpc ? 'Development database setup is incomplete. Apply the Arcanix signup-handle migration before creating accounts.' : 'We could not check that username right now. Please try again.')
-          setAuthBusy(false); return
+          if (availabilityError.code !== 'PGRST202') {
+            setAuthMessage('We could not check that username right now. Please try again.')
+            setAuthBusy(false); return
+          }
+          // Older PostgREST schema caches may not expose the RPC immediately.
+          // Continue to signup: the database trigger and unique index remain
+          // authoritative and reject invalid or duplicate handles.
         }
-        if (!available) { setAuthMessage('That username is already in use. Choose another one.'); setAuthBusy(false); return }
+        if (!availabilityError && !available) { setAuthMessage('That username is already in use. Choose another one.'); setAuthBusy(false); return }
       }
       const result = authMode === 'signup'
         ? await supabase.auth.signUp({ email, password, options: { data: { full_name: name, handle }, emailRedirectTo: `${window.location.origin}/auth/callback` } })
