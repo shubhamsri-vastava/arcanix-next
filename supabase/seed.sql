@@ -1,0 +1,2 @@
+-- The game catalog is versioned in supabase/migrations/202611180001_game_catalog.sql.
+-- Keep this configured seed file present for clean local `db reset` workflows.

@@ -1,0 +1,10 @@
+node_modules
+.next
+.env.local
+.env*.local
+*.tsbuildinfo
+.env*.local*
+.pnpm-store/
+.vercel/
+out/
+supabase/.temp/
